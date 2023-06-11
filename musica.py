@@ -13,7 +13,7 @@ def download_video(url, format):
         video.download()
 
         # Obtener la ruta de la carpeta "Descargas"
-        download_folder = os.path.expanduser("~/Downloads")
+        download_folder = os.path.expanduser("~/Descargas")
 
         # Mover el archivo descargado a la carpeta "Descargas"
         video_path = os.path.join(download_folder, video_filename)
