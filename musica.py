@@ -1,7 +1,8 @@
 import streamlit as st
-import moviepy.editor as mp
-from pathlib import Path
 from pytube import YouTube
+import os
+import shutil
+from pydub import AudioSegment
 
 # Función para descargar el video
 def download_video(url, format):
@@ -13,20 +14,20 @@ def download_video(url, format):
         video.download()
 
         # Obtener la ruta de la carpeta "Descargas"
-        download_folder = Path.home() / "Descargas"
+        download_folder = os.path.expanduser("~/Descargas")
 
         # Mover el archivo descargado a la carpeta "Descargas"
-        video_path = Path(video_filename)
-        target_path = download_folder / video_path.name
-        video_path.rename(target_path)
+        video_path = os.path.join(os.getcwd(), video_filename)
+        target_path = os.path.join(download_folder, video_filename)
+        shutil.move(video_path, target_path)
 
         # Convertir el video a MP3 si se selecciona el formato "MP3"
         if format == 'MP3':
-            mp4_file = str(target_path).replace('.mp4', '.mp3')
-            clip = mp.AudioFileClip(str(target_path))
-            clip.write_audiofile(mp4_file)
-            clip.close()
-            target_path.unlink()  # Eliminar el archivo MP4 original después de la conversión a MP3
+            mp3_filename = video_filename.replace('.mp4', '.mp3')
+            mp3_path = os.path.join(download_folder, mp3_filename)
+            audio = AudioSegment.from_file(target_path)
+            audio.export(mp3_path, format='mp3')
+            os.remove(target_path)
 
         st.success('Descarga completada.')
 
@@ -55,7 +56,7 @@ if st.button('Descargar'):
         download_video(url, format)
     else:
         st.warning('Ingrese un enlace de YouTube válido.')
-        
+
     # Añadir animaciones y barra de progreso
     with st.spinner('Procesando...'):
         st.success('Descarga completada')
