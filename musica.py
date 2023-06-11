@@ -1,7 +1,7 @@
 import streamlit as st
 import moviepy.editor as mp
-from pathlib import Path
 from pytube import YouTube
+import os
 
 # Función para descargar el video
 def download_video(url, format):
@@ -13,20 +13,20 @@ def download_video(url, format):
         video.download()
 
         # Obtener la ruta de la carpeta "Descargas"
-        download_folder = Path.home() / "Descargas"
+        download_folder = os.path.expanduser("~/Downloads")
 
         # Mover el archivo descargado a la carpeta "Descargas"
-        video_path = Path(video_filename)
-        target_path = download_folder / video_path.name
-        video_path.rename(target_path)
+        video_path = os.path.join(download_folder, video_filename)
+        target_path = os.path.join(download_folder, os.path.basename(video_path))
+        os.rename(video_path, target_path)
 
         # Convertir el video a MP3 si se selecciona el formato "MP3"
         if format == 'MP3':
-            mp4_file = str(target_path).replace('.mp4', '.mp3')
-            clip = mp.AudioFileClip(str(target_path))
-            clip.write_audiofile(mp4_file)
+            mp4_file = os.path.splitext(target_path)[0] + '.mp3'
+            clip = mp.VideoFileClip(target_path)
+            clip.audio.write_audiofile(mp4_file)
             clip.close()
-            target_path.unlink()  # Eliminar el archivo MP4 original después de la conversión a MP3
+            os.remove(target_path)  # Eliminar el archivo MP4 original después de la conversión a MP3
 
         st.success('Descarga completada.')
 
@@ -55,8 +55,7 @@ if st.button('Descargar'):
         download_video(url, format)
     else:
         st.warning('Ingrese un enlace de YouTube válido.')
-        
-    # Añadir animaciones y barra de progreso
-    with st.spinner('Procesando...'):
-        st.success('Descarga completada')
-        st.balloons()
+
+    # Añadir animaciones y mensaje de éxito
+    st.success('Descarga completada')
+    st.balloons()
